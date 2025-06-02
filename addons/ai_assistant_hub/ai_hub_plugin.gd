@@ -6,6 +6,7 @@ const CONFIG_BASE_URL:= "plugins/ai_assistant_hub/base_url"
 const CONFIG_LLM_API:= "plugins/ai_assistant_hub/llm_api"
 const CONFIG_OPENROUTER_API_KEY := "plugins/ai_assistant_hub/openrouter_api_key"
 const CONFIG_GEMINI_API_KEY := "plugins/ai_assistant_hub/gemini_api_key"
+const CONFIG_OPENWEBUI_API_KEY := "plugins/ai_assistant_hub/openwebui_api_key"
 
 var _hub_dock:AIAssistantHub
 
@@ -39,7 +40,10 @@ func _enter_tree() -> void:
 
 	# Setup Gemini API key (will be loaded from file if it exists)
 	_init_gemini_api_key()
-	
+
+	# Setup OpenWeb UI API Key (will be loaded from settings only)
+	_init_openwebui_api_key()
+
 	_hub_dock = load("res://addons/ai_assistant_hub/ai_assistant_hub.tscn").instantiate()
 	_hub_dock.initialize(self)
 	add_control_to_bottom_panel(_hub_dock, "AI Hub")
@@ -87,6 +91,12 @@ func _init_gemini_api_key() -> void:
 	
 		# Add setting if it doesn't exist
 	_add_project_setting(CONFIG_GEMINI_API_KEY, api_key, TYPE_STRING, PROPERTY_HINT_NONE, "Gemini API key - Get it from https://aistudio.google.com/app/apikey")
+
+func _init_openwebui_api_key() -> void:
+	var api_key : String = ""
+	if ProjectSettings.has_setting(CONFIG_OPENWEBUI_API_KEY):
+		api_key = ProjectSettings.get_setting(CONFIG_OPENWEBUI_API_KEY)
+	_add_project_setting(CONFIG_OPENWEBUI_API_KEY, api_key, TYPE_STRING, PROPERTY_HINT_NONE, "OpenWebUI Key - Get it from Settings>Account>API Keys>JWT Token in your OpenWebUI Session")
 
 func _exit_tree() -> void:
 	remove_control_from_bottom_panel(_hub_dock)
@@ -158,5 +168,11 @@ func get_available_llm_providers() -> Array[Dictionary]:
 		"description": "Google Gemini LLM (requires API key)"
 	})
 
-	
+	# OpenWeb UI provider
+	providers.append({
+		"id": "openwebui_api",
+		"name": "OpenWebUI",
+		"description": "OpenWebUI for locally hosted LLM (requires API key)"
+	})
+		
 	return providers
