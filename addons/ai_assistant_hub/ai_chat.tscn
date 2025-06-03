@@ -1,10 +1,15 @@
-[gd_scene load_steps=6 format=3 uid="uid://c5d12f133cpv7"]
+[gd_scene load_steps=8 format=3 uid="uid://c5d12f133cpv7"]
 
 [ext_resource type="Script" path="res://addons/ai_assistant_hub/ai_chat.gd" id="1_v0kvm"]
 [ext_resource type="Texture2D" uid="uid://beq5nk70uk8v4" path="res://addons/ai_assistant_hub/graphics/icons/edit_chat_icon.png" id="2_8urns"]
 [ext_resource type="PackedScene" uid="uid://dxr0f1xqsje6b" path="res://addons/ai_assistant_hub/bot_portrait.tscn" id="3_lcoap"]
 [ext_resource type="AudioStream" uid="uid://dk1yumltykf6x" path="res://addons/ai_assistant_hub/sounds/ai_replied.wav" id="4_7y76u"]
+[ext_resource type="Texture2D" uid="uid://qjvopjqelt0m" path="res://addons/ai_assistant_hub/graphics/icons/linear_32_3dmsicons.png" id="4_11xim"]
 [ext_resource type="AudioStream" uid="uid://b2lftlbs848c4" path="res://addons/ai_assistant_hub/sounds/ai_error_cancel.wav" id="5_mmsii"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_glvco"]
+atlas = ExtResource("4_11xim")
+region = Rect2(416.097, 735.908, 31.3832, 32.4435)
 
 [node name="AIChat" type="Control"]
 clip_contents = true
@@ -111,6 +116,27 @@ grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 
+[node name="BotCancel" type="Button" parent="HBoxContainer/VBoxContainer/VSplitContainer/HBoxContainer/MarginContainer"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -4.0
+offset_top = -71.0
+offset_right = 35.0
+offset_bottom = -31.0
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(0.7, 0.7)
+size_flags_vertical = 0
+tooltip_text = "Stop thinking"
+icon = SubResource("AtlasTexture_glvco")
+flat = true
+icon_alignment = 1
+
 [node name="HBoxContainer2" type="HBoxContainer" parent="HBoxContainer/VBoxContainer/VSplitContainer"]
 layout_mode = 2
 
@@ -190,6 +216,7 @@ stream = ExtResource("5_mmsii")
 [connection signal="request_completed" from="HTTPRequest" to="." method="_on_http_request_completed"]
 [connection signal="pressed" from="HBoxContainer/VBoxContainer/VSplitContainer/HBoxContainer/MarginContainer/EditHistory" to="." method="_on_edit_history_pressed"]
 [connection signal="toggled" from="HBoxContainer/VBoxContainer/VSplitContainer/HBoxContainer/MarginContainer/AutoScrollCheckBox" to="." method="_on_auto_scroll_check_box_toggled"]
+[connection signal="pressed" from="HBoxContainer/VBoxContainer/VSplitContainer/HBoxContainer/MarginContainer/BotCancel" to="." method="_abandon_request"]
 [connection signal="toggled" from="HBoxContainer/VBoxContainer/HBoxContainer/TemperatureOverrideCheckbox" to="." method="_on_temperature_override_checkbox_toggled"]
 [connection signal="value_changed" from="HBoxContainer/VBoxContainer/HBoxContainer/TemperatureSliderContainer/TemperatureSlider" to="." method="_on_temperature_slider_value_changed"]
 [connection signal="item_selected" from="HBoxContainer/VBoxContainer/HBoxContainer/ModelOptionsBtn" to="." method="_on_model_options_btn_item_selected"]
