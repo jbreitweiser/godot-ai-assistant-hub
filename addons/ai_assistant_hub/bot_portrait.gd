@@ -11,6 +11,7 @@ const SCALE := 3 # given the images are 16px but we are displaying them 48px, th
 @onready var portrait_mouth: TextureRect = %PortraitMouth
 @onready var portrait_eyes: TextureRect = %PortraitEyes
 @onready var portrait_thinking: TextureRect = %PortraitThinking
+@onready var bot_cancel: Button = %BotCancel
 
 var _think_tween:Tween
 
@@ -36,6 +37,7 @@ var is_thinking:= false:
 		if _think_tween != null and _think_tween.is_running():
 			_think_tween.stop()
 		portrait_thinking.visible = is_thinking
+		bot_cancel.visible = is_thinking
 		if is_thinking:
 			portrait_eyes.position.x = SCALE
 			portrait_eyes.position.y = -SCALE
