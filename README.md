@@ -17,6 +17,7 @@ Thanks to contributors, additionally to Ollama, the following APIs are already s
 * Google Gemini
 * OpenRouter
 * Jan
+* OpenWebUI
 
 First Video 👇
 
