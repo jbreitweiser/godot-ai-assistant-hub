@@ -85,21 +85,6 @@ size_flags_vertical = 0
 icon = ExtResource("2_8urns")
 icon_alignment = 1
 
-[node name="AutoScrollCheckBox" type="CheckBox" parent="HBoxContainer/VBoxContainer/VSplitContainer/HBoxContainer/MarginContainer"]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -24.0
-offset_top = 60.0
-offset_right = 1.0
-offset_bottom = 91.0
-grow_horizontal = 0
-tooltip_text = "always scroll to the bottom"
-text = "
-"
-
 [node name="BotPortrait" parent="HBoxContainer/VBoxContainer/VSplitContainer/HBoxContainer/MarginContainer" instance=ExtResource("3_lcoap")]
 unique_name_in_owner = true
 layout_mode = 1
@@ -215,7 +200,6 @@ stream = ExtResource("5_mmsii")
 
 [connection signal="request_completed" from="HTTPRequest" to="." method="_on_http_request_completed"]
 [connection signal="pressed" from="HBoxContainer/VBoxContainer/VSplitContainer/HBoxContainer/MarginContainer/EditHistory" to="." method="_on_edit_history_pressed"]
-[connection signal="toggled" from="HBoxContainer/VBoxContainer/VSplitContainer/HBoxContainer/MarginContainer/AutoScrollCheckBox" to="." method="_on_auto_scroll_check_box_toggled"]
 [connection signal="pressed" from="HBoxContainer/VBoxContainer/VSplitContainer/HBoxContainer/MarginContainer/BotCancel" to="." method="_abandon_request"]
 [connection signal="toggled" from="HBoxContainer/VBoxContainer/HBoxContainer/TemperatureOverrideCheckbox" to="." method="_on_temperature_override_checkbox_toggled"]
 [connection signal="value_changed" from="HBoxContainer/VBoxContainer/HBoxContainer/TemperatureSliderContainer/TemperatureSlider" to="." method="_on_temperature_slider_value_changed"]
