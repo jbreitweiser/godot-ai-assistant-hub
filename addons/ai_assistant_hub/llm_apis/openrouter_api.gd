@@ -88,7 +88,7 @@ func read_response(body: PackedByteArray) -> String:
 	
 	if response.has("choices") and response.choices.size() > 0:
 		if response.choices[0].has("message") and response.choices[0].message.has("content"):
-			return response.choices[0].message.content
+			return ResponseCleaner.clean(response.choices[0].message.content)
 	
 	push_error("Failed to parse OpenRouter response: %s" % JSON.stringify(response))
 	return INVALID_RESPONSE

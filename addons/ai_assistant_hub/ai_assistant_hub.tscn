@@ -228,7 +228,7 @@ layout_mode = 2
 
 [node name="VersionLabel" type="Label" parent="VBoxContainer/TabContainer/AI Hub/VBoxContainer/GridContainer/AdvancedSettings/HBoxContainer"]
 layout_mode = 2
-text = "v1.3.0"
+text = "v1.4.0"
 horizontal_alignment = 2
 
 [node name="SupportBtn" type="LinkButton" parent="VBoxContainer/TabContainer/AI Hub/VBoxContainer/GridContainer/AdvancedSettings/HBoxContainer"]

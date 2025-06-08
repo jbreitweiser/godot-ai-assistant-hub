@@ -2,6 +2,10 @@
 class_name AIHubPlugin
 extends EditorPlugin
 
+enum ThinkingTargets { Output, Chat, Discard }
+const PREF_REMOVE_THINK:= "plugins/ai_assistant_hub/preferences/thinking_target"
+const PREF_SCROLL_BOTTOM:= "plugins/ai_assistant_hub/preferences/always_scroll_to_bottom"
+
 const CONFIG_BASE_URL:= "plugins/ai_assistant_hub/base_url"
 const CONFIG_LLM_API:= "plugins/ai_assistant_hub/llm_api"
 const CONFIG_OPENROUTER_API_KEY := "plugins/ai_assistant_hub/openrouter_api_key"
@@ -11,6 +15,24 @@ const CONFIG_OPENWEBUI_API_KEY := "plugins/ai_assistant_hub/openwebui_api_key"
 var _hub_dock:AIAssistantHub
 
 func _enter_tree() -> void:
+	initialize_project_settings()
+	
+	# Setup OpenRouter API key (will be loaded from file if it exists)
+	_init_openrouter_api_key()
+
+	# Setup Gemini API key (will be loaded from file if it exists)
+	_init_gemini_api_key()
+
+	# Setup OpenWeb UI API Key (will be loaded from settings only)
+	_init_openwebui_api_key()
+
+	_hub_dock = load("res://addons/ai_assistant_hub/ai_assistant_hub.tscn").instantiate()
+	_hub_dock.initialize(self)
+	add_control_to_bottom_panel(_hub_dock, "AI Hub")
+	#add_control_to_dock(EditorPlugin.DOCK_SLOT_LEFT_UL, _hub_dock)
+
+
+func initialize_project_settings() -> void:
 	if ProjectSettings.get_setting(CONFIG_BASE_URL, "").is_empty():
 		# In the future we can consider moving this back to simply:
 		# ProjectSettings.set_setting(CONFIG_BASE_URL, "http://127.0.0.1:11434")
@@ -35,19 +57,22 @@ func _enter_tree() -> void:
 		else:
 			ProjectSettings.set_setting(CONFIG_LLM_API, "ollama_api")
 	
-	# Setup OpenRouter API key (will be loaded from file if it exists)
-	_init_openrouter_api_key()
+	if not ProjectSettings.has_setting(PREF_REMOVE_THINK):
+		ProjectSettings.set_setting(PREF_REMOVE_THINK, ThinkingTargets.Output)
+		ProjectSettings.save()
+	
+	var property_info = {
+		"name": PREF_REMOVE_THINK,
+		"type": TYPE_INT,
+		"hint": PROPERTY_HINT_ENUM,
+		"hint_string": "Output,Chat,Discard"
+	}
+	ProjectSettings.add_property_info(property_info)
+	
+	if not ProjectSettings.has_setting(PREF_SCROLL_BOTTOM):
+		ProjectSettings.set_setting(PREF_SCROLL_BOTTOM, false)
+		ProjectSettings.save()
 
-	# Setup Gemini API key (will be loaded from file if it exists)
-	_init_gemini_api_key()
-
-	# Setup OpenWeb UI API Key (will be loaded from settings only)
-	_init_openwebui_api_key()
-
-	_hub_dock = load("res://addons/ai_assistant_hub/ai_assistant_hub.tscn").instantiate()
-	_hub_dock.initialize(self)
-	add_control_to_bottom_panel(_hub_dock, "AI Hub")
-	#add_control_to_dock(EditorPlugin.DOCK_SLOT_LEFT_UL, _hub_dock)
 
 # Initialize OpenRouter API key settings
 func _init_openrouter_api_key() -> void:

@@ -135,7 +135,7 @@ func read_response(body: PackedByteArray) -> String:
 		if response.candidates[0].has("content") and response.candidates[0].content.has("parts"):
 			var parts = response.candidates[0].content.parts
 			if parts.size() > 0 and parts[0].has("text"):
-				return parts[0].text
+				return ResponseCleaner.clean(parts[0].text)
 	push_error("Failed to parse Gemini response: %s" % JSON.stringify(response))
 	return INVALID_RESPONSE
 

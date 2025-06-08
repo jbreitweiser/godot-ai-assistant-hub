@@ -58,24 +58,7 @@ func read_response(body) -> String:
 	json.parse(body.get_string_from_utf8())
 	var response := json.get_data()
 	if response.has("message"):
-
-		# detect thinking
-		# response.message.content will contain a string
-		# that has  think data  in between tags
-		# we want to remove think tags, and all the data in between
-		
-		var content = response.message.content
-		var open_tag = "<think>"
-		var close_tag = "</think>"
-		var think_o = content.find(open_tag)
-		var think_c = content.find(close_tag)
-		var return_response:String
-		if think_o >= 0 and think_c != -1:
-			return_response = content.substr(think_c+close_tag.length(), content.length()) 
-		else:
-			return_response = content
-			
-		return return_response 
+		return ResponseCleaner.clean(response.message.content)
 	else:
 		return LLMInterface.INVALID_RESPONSE
 

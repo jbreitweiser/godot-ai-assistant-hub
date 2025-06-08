@@ -21,10 +21,6 @@ const CHAT_HISTORY_EDITOR = preload("res://addons/ai_assistant_hub/chat_history_
 @onready var temperature_slider: HSlider = %TemperatureSlider
 @onready var temperature_override_checkbox: CheckBox = %TemperatureOverrideCheckbox
 @onready var temperature_slider_container: HBoxContainer = %TemperatureSliderContainer
-@onready var auto_scroll_check_box: CheckBox = %AutoScrollCheckBox
-
-# Switch to control auto-scrolling to the bottom of conversation (only affects AI replies)
-@onready var auto_scroll_to_bottom: bool=%AutoScrollCheckBox.button_pressed
 
 var _plugin:EditorPlugin
 var _bot_name: String
@@ -35,16 +31,6 @@ var _bot_answer_handler: AIAnswerHandler
 var _llm: LLMInterface
 var _conversation: AIConversation
 
-# Set whether to auto-scroll to the bottom of conversation (only affects AI replies)
-func set_auto_scroll_to_bottom(enable: bool) -> void:
-	auto_scroll_to_bottom = enable
-	# Don't immediately change the scroll_following property, but decide based on sender when adding messages
-	if output_window == null:
-		return
-
-# Get the current auto-scroll status
-func get_auto_scroll_to_bottom() -> bool:
-	return auto_scroll_to_bottom
 
 # Scroll the output window by one page
 func _scroll_output_by_page() -> void:
@@ -84,11 +70,6 @@ func initialize(plugin:EditorPlugin, assistant_settings: AIAssistantResource, bo
 		temperature_override_checkbox.button_pressed = assistant_settings.use_custom_temperature
 		_on_temperature_override_checkbox_toggled(temperature_override_checkbox.button_pressed)
 		
-		# Read auto-scroll settings from the scene
-		if auto_scroll_check_box:
-			auto_scroll_to_bottom = auto_scroll_check_box.button_pressed
-			set_auto_scroll_to_bottom(auto_scroll_to_bottom)
-	
 		bot_portrait.set_random()
 		reply_sound.pitch_scale = randf_range(0.7, 1.2)
 	
@@ -219,6 +200,8 @@ func _on_http_request_completed(result: int, response_code: int, headers: Packed
 
 
 func _add_to_chat(text:String, caller:Caller) -> void:
+	var auto_scroll_to_bottom: bool = ProjectSettings.get_setting(AIHubPlugin.PREF_SCROLL_BOTTOM, false)
+	
 	# Set auto-scroll based on message sender
 	if caller == Caller.You or caller == Caller.System:
 		# User and system messages always auto-scroll
@@ -268,11 +251,6 @@ func _on_edit_history_pressed() -> void:
 	history_editor.initialize(_conversation)
 	add_child(history_editor)
 	history_editor.popup()
-
-
-func _on_auto_scroll_check_box_toggled(toggled_on: bool) -> void:
-	set_auto_scroll_to_bottom(toggled_on)
-	# Don't immediately change scrolling behavior, but apply on next AI reply
 
 
 func _on_temperature_override_checkbox_toggled(toggled_on: bool) -> void:
