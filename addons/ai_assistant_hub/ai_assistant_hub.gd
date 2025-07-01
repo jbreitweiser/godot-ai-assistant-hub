@@ -6,11 +6,12 @@ signal models_refreshed(models:Array[String])
 signal new_api_loaded()
 
 const NEW_AI_ASSISTANT_BUTTON = preload("res://addons/ai_assistant_hub/new_ai_assistant_button.tscn")
+const NEW_AI_ASSISTANT_PATH = "res://addons/ai_assistant_hub/assistants/"
 
 @onready var models_http_request: HTTPRequest = %ModelsHTTPRequest
 @onready var url_txt: LineEdit = %UrlTxt
 @onready var api_class_txt: LineEdit = %ApiClassTxt
-@onready var models_list: RichTextLabel = %ModelsList
+@onready var models_list: ItemList = %ModelsList
 @onready var no_assistants_guide: Label = %NoAssistantsGuide
 @onready var assistant_types_container: HFlowContainer = %AssistantTypesContainer
 @onready var tab_container: TabContainer = %TabContainer
@@ -22,6 +23,7 @@ const NEW_AI_ASSISTANT_BUTTON = preload("res://addons/ai_assistant_hub/new_ai_as
 @onready var advanced_settings: HBoxContainer = %AdvancedSettings
 @onready var assistants: HBoxContainer = %Assistants
 @onready var assistants_refresh_btn: Button = %AssistantsRefreshBtn
+@onready var assistants_new_btn: Button = %AssistantsNewBtn
 
 var _plugin:EditorPlugin
 var _tab_bar:TabBar
@@ -71,8 +73,13 @@ func initialize(plugin:EditorPlugin) -> void:
 
 
 func resize_refresh_btns() -> void:
-	api_load_btn.custom_minimum_size.x = advanced_settings.size.y
-	assistants_refresh_btn.custom_minimum_size.x = assistants.size.y
+	var btn_size = advanced_settings.size.y
+	if api_load_btn:
+		api_load_btn.custom_minimum_size.x = btn_size
+	if assistants_refresh_btn:
+		assistants_refresh_btn.custom_minimum_size.x = btn_size
+	if assistants_new_btn:
+		assistants_new_btn.custom_minimum_size.x = btn_size
 
 # Initialize LLM provider options
 func _initialize_llm_provider_options() -> void:
@@ -124,7 +131,7 @@ func _on_settings_changed(_x) -> void:
 
 
 func _on_refresh_models_btn_pressed() -> void:
-	models_list.text = ""
+	models_list.clear()
 	_models_llm.send_get_models_request(models_http_request)
 
 
@@ -132,18 +139,18 @@ func _on_models_http_request_completed(result: int, response_code: int, headers:
 	if result == 0:
 		var models_returned: Array = _models_llm.read_models_response(body)
 		if models_returned.size() == 0:
-			models_list.text = "No models found. Download at least one model and try again."
+			models_list.add_item("No models found. Download at least one model and try again.")
 		else:
 			if models_returned[0] == LLMInterface.INVALID_RESPONSE:
-				models_list.text = "Error while trying to get the models list. Response: %s" % _models_llm.get_full_response(body)
+				models_list.add_item("Error while trying to get the models list. Response: %s" % _models_llm.get_full_response(body))
 			else:
 				_model_names = models_returned
 				for model in _model_names:
-					models_list.text += "%s\n" % model
+					models_list.add_item(model)
 				models_refreshed.emit(_model_names) #for existing chats
 	else:
 		push_error("HTTP response: Result: %s, Response Code: %d, Headers: %s, Body: %s" % [result, response_code, headers, body])
-		models_list.text = "Something went wrong querying for models, is the Server URL correct?"
+		models_list.add_item("Something went wrong querying for models, is the Server URL correct?")
 
 
 func _on_assistants_refresh_btn_pressed() -> void:
@@ -238,3 +245,67 @@ func _on_openrouter_api_key_text_changed(new_text: String) -> void:
 		var openrouter_api = load("res://addons/ai_assistant_hub/llm_apis/openrouter_api.gd").new()
 		openrouter_api.save_api_key(new_text)
 	ProjectSettings.save()
+
+
+func _on_assistants_new_btn_pressed() -> void:
+	var provider_name = llm_provider_option.get_item_text(llm_provider_option.selected) + ".tres"
+	var dialog_text = "Provide an assistant name.  This will be the file name as well as the button text."
+	show_file_dialog("AI Assistant Filename", provider_name, NEW_AI_ASSISTANT_PATH, dialog_text, file_selected)
+
+func show_file_dialog(title: String, filename: String, start_dir: String, dialog_text: String, call_back: Callable):
+	# Create file dialog
+	var dialog = EditorFileDialog.new()
+	add_child(dialog)
+	dialog.title = title
+	dialog.dialog_text = dialog_text
+	dialog.current_dir = start_dir
+	dialog.current_file = filename
+	dialog.file_selected.connect(call_back)
+	dialog.popup_file_dialog()
+
+
+func file_selected(filename: String): 
+	var selected_model: String
+	var selected_indices = models_list.get_selected_items()
+	for i in selected_indices:
+		selected_model = models_list.get_item_text(i)
+
+	if selected_model.is_empty():
+		popup_confirm("Model is not selected.  Highlight a model name")
+		return
+		
+	var provider_name = llm_provider_option.get_item_text(llm_provider_option.selected) # Assuming llm_provider is a Label or similar
+	var new_assistant_resource = AIAssistantResource.new()
+	
+	if filename.is_empty():
+		filename = _get_next_file_name(NEW_AI_ASSISTANT_PATH, "tres" , provider_name)
+	
+	new_assistant_resource.resource_path = filename
+	 
+	new_assistant_resource.ai_model = selected_model
+	new_assistant_resource.type_name = provider_name
+	new_assistant_resource.api_class = api_class_txt.text
+
+	ResourceSaver.save(new_assistant_resource)
+	EditorInterface.edit_resource(new_assistant_resource)
+	
+	_on_assistants_refresh_btn_pressed()
+
+func _get_next_file_name(path: String, ext: String, filename: String, num: int = 0) -> String:
+	var new_filename
+	
+	if(num == 0):
+		new_filename = "%s/%s.%s" % [path, filename, ext]
+	else:
+		new_filename = "%s/%s(%s).%s" % [path, filename,num, ext]
+	
+	if ResourceLoader.exists(new_filename):
+		return _get_next_file_name(path, ext, filename, num+1)
+	else:
+		return new_filename
+	
+func popup_confirm(message: String) -> void:
+	var dialog:AcceptDialog = AcceptDialog.new()
+	add_child(dialog)
+	dialog.dialog_text = message
+	dialog.popup_centered()

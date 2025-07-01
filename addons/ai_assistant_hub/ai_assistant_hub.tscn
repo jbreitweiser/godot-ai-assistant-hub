@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://w1f4dho35qy2"]
+[gd_scene load_steps=4 format=3 uid="uid://w1f4dho35qy2"]
 
 [ext_resource type="Script" path="res://addons/ai_assistant_hub/ai_assistant_hub.gd" id="1_x668t"]
 [ext_resource type="Texture2D" uid="uid://cep750ky28v0s" path="res://addons/ai_assistant_hub/graphics/icons/Reload.svg" id="2_ormfk"]
+[ext_resource type="Texture2D" uid="uid://ci0t0vpamnebd" path="res://addons/ai_assistant_hub/graphics/icons/Add.svg" id="3_rffd5"]
 
 [node name="AIAssistantHub" type="Control"]
 custom_minimum_size = Vector2(0, 260)
@@ -80,10 +81,18 @@ layout_mode = 2
 [node name="AssistantsRefreshBtn" type="Button" parent="VBoxContainer/TabContainer/AI Hub/VBoxContainer/Assistants"]
 unique_name_in_owner = true
 auto_translate_mode = 1
-custom_minimum_size = Vector2(40, 0)
+custom_minimum_size = Vector2(101, 0)
 layout_mode = 2
 icon = ExtResource("2_ormfk")
 autowrap_mode = 2
+icon_alignment = 1
+expand_icon = true
+
+[node name="AssistantsNewBtn" type="Button" parent="VBoxContainer/TabContainer/AI Hub/VBoxContainer/Assistants"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(101, 0)
+layout_mode = 2
+icon = ExtResource("3_rffd5")
 icon_alignment = 1
 expand_icon = true
 
@@ -115,15 +124,12 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ModelsList" type="RichTextLabel" parent="VBoxContainer/TabContainer/AI Hub/VBoxContainer/GridContainer/VBoxContainer/PanelContainer"]
+[node name="ModelsList" type="ItemList" parent="VBoxContainer/TabContainer/AI Hub/VBoxContainer/GridContainer/VBoxContainer/PanelContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-focus_mode = 2
-autowrap_mode = 2
-selection_enabled = true
 
 [node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/TabContainer/AI Hub/VBoxContainer/GridContainer/VBoxContainer"]
 layout_mode = 2
@@ -233,10 +239,6 @@ icon = ExtResource("2_ormfk")
 icon_alignment = 1
 expand_icon = true
 
-[node name="AspectRatioContainer" type="AspectRatioContainer" parent="VBoxContainer/TabContainer/AI Hub/VBoxContainer/GridContainer/AdvancedSettings"]
-layout_mode = 2
-stretch_mode = 1
-
 [node name="Spacer3" type="Control" parent="VBoxContainer/TabContainer/AI Hub/VBoxContainer/GridContainer/AdvancedSettings"]
 auto_translate_mode = 1
 layout_mode = 2
@@ -261,11 +263,10 @@ underline = 2
 uri = "https://github.com/FlamxGames/godot-ai-assistant-hub/blob/main/support.md"
 
 [connection signal="request_completed" from="ModelsHTTPRequest" to="." method="_on_models_http_request_completed"]
-[connection signal="resized" from="VBoxContainer/TabContainer/AI Hub/VBoxContainer/Assistants" to="." method="resize_refresh_btns"]
 [connection signal="pressed" from="VBoxContainer/TabContainer/AI Hub/VBoxContainer/Assistants/AssistantsRefreshBtn" to="." method="_on_assistants_refresh_btn_pressed"]
+[connection signal="pressed" from="VBoxContainer/TabContainer/AI Hub/VBoxContainer/Assistants/AssistantsNewBtn" to="." method="_on_assistants_new_btn_pressed"]
 [connection signal="pressed" from="VBoxContainer/TabContainer/AI Hub/VBoxContainer/GridContainer/VBoxContainer/VBoxContainer/RefreshModelsBtn" to="." method="_on_refresh_models_btn_pressed"]
 [connection signal="item_selected" from="VBoxContainer/TabContainer/AI Hub/VBoxContainer/GridContainer/LLMProviderContainer/LLMProviderOption" to="." method="_on_llm_provider_option_item_selected"]
-[connection signal="resized" from="VBoxContainer/TabContainer/AI Hub/VBoxContainer/GridContainer/AdvancedSettings" to="." method="resize_refresh_btns"]
 [connection signal="text_changed" from="VBoxContainer/TabContainer/AI Hub/VBoxContainer/GridContainer/AdvancedSettings/UrlTxt" to="." method="_on_settings_changed"]
 [connection signal="text_changed" from="VBoxContainer/TabContainer/AI Hub/VBoxContainer/GridContainer/AdvancedSettings/OpenRouterKeyContainer/OpenRouterAPIKey" to="." method="_on_openrouter_api_key_text_changed"]
 [connection signal="text_changed" from="VBoxContainer/TabContainer/AI Hub/VBoxContainer/GridContainer/AdvancedSettings/ApiClassTxt" to="." method="_on_settings_changed"]
