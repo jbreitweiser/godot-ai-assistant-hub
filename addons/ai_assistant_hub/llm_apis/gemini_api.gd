@@ -86,6 +86,11 @@ func send_chat_request(http_request: HTTPRequest, message_list: Array) -> bool:
 		var text = msg.get("content", msg.get("text", msg))
 		text = _extract_content_from_json_string(text)
 
+		# Remap "assistant" role to "model" for Gemini API compatibility.
+		# Gemini only accepts "user" or "model" roles in its 'contents' array.
+		if role == "assistant":
+			role = "model"
+
 		# If it's the first message and it's a system message, change the role to user
 		if i == 0 and role == "system":
 			role = "user"
