@@ -74,12 +74,14 @@ The following keywords are used to allow the prompt to pull data from the Code E
 
 ## Setup steps
 In general this is what you need to do:
+0. Install Ollama or some other LLM supported and download a model.
 1. Download this addon and copy the folder ai_assistant_hub into your addons folder (`res://addons/ai_assistant_hub/`).
 2. Enable the plugin in your project settings, you should see a new tab `AI Hub` in the bottom panel.
-3. In folder `res://addons/ai_assistant_hub/assistants/` right click, Create New > Resource... > AIAssistantResource
+3.A You should see a list of models you have installed. Click one and use the "New assistant type".
+3.B Alternatively to 3.A, in folder `res://addons/ai_assistant_hub/assistants/` right click, Create New > Resource... > AIAssistantResource
 4. Fill up the data for your assistant.
 5. Add quick prompts to the assistant if needed.
-6. Click the reload button in the plugin to see your new assistant type.
+6. If added manually (3.B), click the reload button in the plugin to see your new assistant type. If you used 3.A it should be visible automatically.
 7. Click the assistant type button to start a chat with a new assistant of this type.
 8. Start using them to chat, pair programming, write, add inline documentation - it's up to you!
 
