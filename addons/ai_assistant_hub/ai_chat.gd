@@ -62,7 +62,7 @@ func initialize(plugin:EditorPlugin, assistant_settings: AIAssistantResource, bo
 	_conversation = AIConversation.new()
 		
 	if _assistant_settings: # We need to check this, otherwise this is called when editing the plugin
-		load_api()
+		load_api(_assistant_settings.api_class)
 		_conversation.set_system_message(_assistant_settings.ai_description)
 		
 		await ready
@@ -82,14 +82,17 @@ func initialize(plugin:EditorPlugin, assistant_settings: AIAssistantResource, bo
 			quick_prompts_panel.add_child(qp_button)
 
 
-func load_api() -> void:
-	_llm = _plugin.new_llm_provider()
-	if _llm:
-		_llm.model = _assistant_settings.ai_model
-		_llm.override_temperature = _assistant_settings.use_custom_temperature
-		_llm.temperature = _assistant_settings.custom_temperature
+func load_api(api_class: String) -> void:
+	if not _assistant_settings.api_class.is_empty() and api_class != _assistant_settings.api_class:
+		_add_to_chat("This assistant is still using API class %s. If you want it to change with the API selected in AI Hub, remove the API class property from its assistant type resource and summon a new assistant." % _assistant_settings.api_class, Caller.System)
 	else:
-		push_error("LLM provider failed to initialize. Check the plugin's LLM provider configuration in Project Settings.")
+		_llm = _plugin.new_llm_provider(api_class)
+		if _llm:
+			_llm.model = _assistant_settings.ai_model
+			_llm.override_temperature = _assistant_settings.use_custom_temperature
+			_llm.temperature = _assistant_settings.custom_temperature
+		else:
+			push_error("LLM provider failed to initialize. Check the API class in the assistant type resource, or if empty, the plugin's LLM provider configuration in Project Settings.")
 
 
 func greet() -> void:

@@ -3,17 +3,20 @@ class_name AIAssistantHub
 extends Control
 
 signal models_refreshed(models:Array[String])
-signal new_api_loaded()
+signal new_api_loaded(api_class:String)
 
 const NEW_AI_ASSISTANT_BUTTON = preload("res://addons/ai_assistant_hub/new_ai_assistant_button.tscn")
+const NEW_AI_ASSISTANT_TYPE_WINDOW = preload("res://addons/ai_assistant_hub/new_ai_assistant_type_window.tscn")
 
 @onready var models_http_request: HTTPRequest = %ModelsHTTPRequest
 @onready var url_txt: LineEdit = %UrlTxt
 @onready var api_class_txt: LineEdit = %ApiClassTxt
-@onready var models_list: RichTextLabel = %ModelsList
+@onready var models_list: ItemList = %ModelsList
+@onready var models_list_error: Label = %ModelsListError
 @onready var no_assistants_guide: Label = %NoAssistantsGuide
 @onready var assistant_types_container: HFlowContainer = %AssistantTypesContainer
 @onready var tab_container: TabContainer = %TabContainer
+@onready var new_assistant_type_button: Button = %NewAssistantTypeButton
 @onready var llm_provider_option: OptionButton = %LLMProviderOption
 @onready var url_label: Label = %UrlLabel
 @onready var openrouter_key_container: HBoxContainer = %OpenRouterKeyContainer
@@ -115,26 +118,35 @@ func _on_settings_changed(_x) -> void:
 
 
 func _on_refresh_models_btn_pressed() -> void:
-	models_list.text = ""
+	models_list.deselect_all()
+	models_list.visible = false
+	models_list_error.visible = false
 	_models_llm.send_get_models_request(models_http_request)
 
 
 func _on_models_http_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray) -> void:
+	models_list_error.visible = false
+	models_list.visible = false
 	if result == 0:
 		var models_returned: Array = _models_llm.read_models_response(body)
 		if models_returned.size() == 0:
-			models_list.text = "No models found. Download at least one model and try again."
+			models_list_error.text = "No models found. Download at least one model and try again."
+			models_list_error.visible = true
 		else:
 			if models_returned[0] == LLMInterface.INVALID_RESPONSE:
-				models_list.text = "Error while trying to get the models list. Response: %s" % _models_llm.get_full_response(body)
+				models_list_error.text = "Error while trying to get the models list. Response: %s" % _models_llm.get_full_response(body)
+				models_list_error.visible = true
 			else:
+				models_list.clear()
+				models_list.visible = true
 				_model_names = models_returned
 				for model in _model_names:
-					models_list.text += "%s\n" % model
+					models_list.add_item(model)
 				models_refreshed.emit(_model_names) #for existing chats
 	else:
 		push_error("HTTP response: Result: %s, Response Code: %d, Headers: %s, Body: %s" % [result, response_code, headers, body])
-		models_list.text = "Something went wrong querying for models, is the Server URL correct?"
+		models_list_error.text = "Something went wrong querying for models, is the Server URL correct?"
+		models_list_error.visible = true
 
 
 func _on_assistants_refresh_btn_pressed() -> void:
@@ -156,7 +168,7 @@ func _on_assistants_refresh_btn_pressed() -> void:
 			assistant_types_container.add_child(new_bot_btn)
 	
 	if not found:
-		no_assistants_guide.text = "You have no assistant types! Create a new AIAssistantResource in the assistants folder, then click the refresh button. The folder is at: %s" % assistants_path
+		no_assistants_guide.text = "Create an assistant type by selecting a model and clicking \"New assistant type\". Or manually create a new resource AIAssistantResource in the assistant types folder, then click the reload button.\nThe assistant types folder is at: %s" % assistants_path
 		no_assistants_guide.visible = true
 		assistant_types_container.visible = false
 	else:
@@ -192,7 +204,7 @@ func _on_api_load_btn_pressed() -> void:
 		push_error("Invalid API class")
 		return
 	_models_llm = new_llm
-	new_api_loaded.emit()
+	new_api_loaded.emit(api_class_txt.text)
 
 
 # Called when LLM provider option changes
@@ -229,3 +241,26 @@ func _on_openrouter_api_key_text_changed(new_text: String) -> void:
 		var openrouter_api = load("res://addons/ai_assistant_hub/llm_apis/openrouter_api.gd").new()
 		openrouter_api.save_api_key(new_text)
 	ProjectSettings.save()
+
+
+func _on_new_assistant_type_button_pressed() -> void:
+	if models_list.is_anything_selected():
+		var new_assistant_type_window:NewAIAssistantTypeWindow = NEW_AI_ASSISTANT_TYPE_WINDOW.instantiate()
+		var api_class :String = api_class_txt.text
+		var model_name :String = models_list.get_item_text(models_list.get_selected_items()[0])
+		var assistants_path = "%s/assistants" % self.scene_file_path.get_base_dir()
+		new_assistant_type_window.initialize(api_class, model_name, assistants_path)
+		new_assistant_type_window.assistant_type_created.connect(_on_assistants_refresh_btn_pressed)
+		add_child(new_assistant_type_window)
+		new_assistant_type_window.popup()
+	else:
+		new_assistant_type_button.disabled = true
+
+
+func _on_models_list_item_selected(index: int) -> void:
+	new_assistant_type_button.disabled = false
+
+
+func _on_models_list_empty_clicked(at_position: Vector2, mouse_button_index: int) -> void:
+	models_list.deselect_all()
+	new_assistant_type_button.disabled = true
