@@ -8,6 +8,8 @@ Ways to support this project:
   If you find bugs, report them giving all the details.
 ### 4. Enhance it
   Discuss some enhancement and make a pull request.
+  
+  (TEMPORARY WARNING: Please wait until I fix [bug #28](https://github.com/FlamxGames/godot-ai-assistant-hub/issues/28) before adding any new APIs, I am doing an important refactoring for this.)
 
 -----
 Looking forward to see your contributions! 🙌
