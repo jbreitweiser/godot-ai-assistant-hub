@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="AIAssistantResource" load_steps=3 format=3 uid="uid://c1f0ri3jwuluu"]
+
+[ext_resource type="Script" path="res://addons/ai_assistant_hub/quick_prompts/ai_quick_prompt_resource.gd" id="1_ah2ak"]
+[ext_resource type="Script" path="res://addons/ai_assistant_hub/assistants/ai_assistant_resource.gd" id="2_1te0c"]
+
+[resource]
+script = ExtResource("2_1te0c")
+type_name = "writer"
+ai_model = "codellama:7b"
+api_class = "ollama_api"
+ai_description = "You are a useful Godot AI assistant."
+use_custom_temperature = false
+custom_temperature = 0.5
+quick_prompts = Array[ExtResource("1_ah2ak")]([])
